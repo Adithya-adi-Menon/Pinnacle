@@ -2,6 +2,6 @@
 .venv
 backend.db
 eskcrow.json
-DBtesting.py
-test_transaction.py
+test*.py
 create_acc.py
+__pycache__

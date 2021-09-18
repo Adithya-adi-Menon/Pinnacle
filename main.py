@@ -5,8 +5,12 @@ from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String
 from initializeDB import txns
 import json
 
-engine = create_engine("sqlite:///backend.db", echo=True)
+engine = create_engine(
+    "sqlite:///backend.db", echo=True, connect_args={"check_same_thread": False}
+)
 conn = engine.connect()
+
+CONFIRM_PARAPHRASE = "I ACCEPT THE TRANSACTION"
 
 app = Flask(__name__)
 server = Server("https://horizon-testnet.stellar.org")
@@ -28,9 +32,9 @@ def main_page():
 
 
 # TODO
-@app.route("create_account", methods=["POST"])
-def create_account():
-    return "create_account"
+# @app.route("create_account", methods=["POST"])
+# def create_account():
+#     return "create_account"
 
 
 # Change to albedo
@@ -46,15 +50,19 @@ def create_account():
 @app.route("/make_payment", methods=["POST"])
 def make_payment():
     data = request.form
-    ins = txns.insert().values(
-        id=data["id"],
-        description=data["description"],
-        price=data["price"],
-        depositWID=data["depositWID"],
-        conditions=data["conditions"],
-        secretproduct=data["secretproduct"],
-    )
-    result = conn.execute(ins)
+    try:
+        stmt = txns.insert().values(
+            id=data["id"],
+            description=data["description"],
+            price=data["price"],
+            depositwid=data["depositwid"],
+            conditions=data["conditions"],
+            secretproduct=data["secretproduct"],
+        )
+        conn.execute(stmt)
+    except Exception as err:
+        return make_response({"error": f"Something crashed while writing to DB {err}"}, 400)
+
     return jsonify(
         id=data["id"],
         destination=eskcrow_keypair.public_key,
@@ -66,14 +74,20 @@ def make_payment():
 @app.route("/send_payment", methods=["POST"])
 def send_payment():
     """POST params:
-    to: to-public-wallet-address
-    value: amount
     tx: transaction_id
+    hash_msg: CONFIRM_PARAPHRASE signed by the buyer
     """
+    # TODO VERIFY HASH MESSAGE
     data = request.get_json(force=True)
     if data is None:
         return jsonify({"error": "No JSON received"})
     else:
+        if not (resp := get_payment_details(data["tx"], remove_secret=False)):
+            return jsonify({"error": "Transaction not found"})
+
+        if not (txn_old := resp.get_json()):
+            return jsonify({"error": "Internal parsing error (THIS SHOULD NEVER EVER HAPPEN)"})
+
         base_fee = get_base_fee()
         try:
             transaction = (
@@ -82,21 +96,35 @@ def send_payment():
                     network_passphrase=Network.TESTNET_NETWORK_PASSPHRASE,
                     base_fee=base_fee,
                 )
-                .add_text_memo(data["TODO"])
-                .append_payment_op(data["to"], "10.25", "XLM")
+                .add_text_memo("test transaction")
+                .append_payment_op(txn_old["depositWID"], txn_old["price"], "XLM")
                 .build()
             )
         except KeyError as err:
-            return make_response({"error": f"Wrong parameter {err}"}, 404)
+            return make_response({"error": f"Wrong parameter {err}"}, 403)
 
         transaction.sign(eskcrow_keypair)
         response = server.submit_transaction(transaction)
-        print(response)
+
+        stmt = txns.delete().where(txns.c.id == txn_old["id"])
+        res = conn.execute(stmt)
+        if res.rowcount <= 0:
+            return jsonify({"error": "Internal error, Table corruption"})
+
+        return jsonify(txn_old)
 
 
 @app.route("/payment_details/<tx>", methods=["GET"])
-def get_payment_details(tx):
-    return tx
+def get_payment_details(tx, remove_secret=True):
+    sel = txns.select().where(txns.c.id == tx)
+    if res := conn.execute(sel).fetchone():
+        out = {txns.c[i].key: res[i] for i in range(len(txns.columns))}
+        if remove_secret:
+            out.pop("secretproduct")
+        return jsonify(out)
+    else:
+        return make_response({"error": f"No transaction found"}, 500)
 
 
-app.run()
+app.run(debug=True)
+conn.close()

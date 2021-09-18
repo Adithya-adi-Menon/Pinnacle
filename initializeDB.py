@@ -6,7 +6,7 @@ txns = Table(
     meta_txn,
     Column("id", Integer, primary_key=True),
     Column("description", String),
-    Column("price", String),
+    Column("price", Integer),
     Column("depositWID", String),
     Column("conditions", String),
     Column("secretproduct", String),
