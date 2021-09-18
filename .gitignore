@@ -1,0 +1,7 @@
+.vscode
+.venv
+backend.db
+eskcrow.json
+DBtesting.py
+test_transaction.py
+create_acc.py
