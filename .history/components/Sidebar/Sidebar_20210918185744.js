@@ -31,12 +31,12 @@ export default function Sidebar() {
       w={navSize == "small" ? "75px" : "200px"}
       flexDir="column"
       justifyContent="space-between"
+      h="100%"
     >
       <Flex
         p="5%"
         flexDir="column"
         w="100%"
-        h="100%"
         alignItems={navSize == "small" ? "center" : "flex-start"}
         as="nav"
       >

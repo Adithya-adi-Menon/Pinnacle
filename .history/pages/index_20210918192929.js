@@ -4,7 +4,6 @@ import Sidebar from "../components/Sidebar/Sidebar";
 import { Flex, Text, IconButton } from "@chakra-ui/react";
 import { FiMenu } from "react-icons/fi";
 import Hero from "../components/Hero";
-import Hero2 from "../components/Hero2";
 
 export default function Home() {
   return (

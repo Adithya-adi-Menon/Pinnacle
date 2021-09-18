@@ -3,8 +3,6 @@ import { VStack } from "@chakra-ui/layout";
 import Sidebar from "../components/Sidebar/Sidebar";
 import { Flex, Text, IconButton } from "@chakra-ui/react";
 import { FiMenu } from "react-icons/fi";
-import Hero from "../components/Hero";
-import Hero2 from "../components/Hero2";
 
 export default function Home() {
   return (
@@ -17,7 +15,7 @@ export default function Home() {
 
       <VStack
         w="100%"
-        background="linear-gradient(28deg, rgba(209, 194, 244, 1) 2%, rgba(209, 194, 244, 1) 25%, rgba(221, 217, 232, 1) 51%, rgba(221, 217, 232, 1) 68%, rgba(209, 194, 244, 1) 82%)"
+        background="linear-gradient(28deg, rgba(209, 194, 244, 1) 2%, rgba(209, 194, 244, 1) 31%, rgba(221, 217, 232, 1) 51%, rgba(221, 217, 232, 1) 68%, rgba(209, 194, 244, 1) 82%)"
         // backgroundImage={useColorModeValue('url(/images/v2/lightbg.png)', 'url(/images/v2/darkbg.png)')}
         backgroundSize="cover"
         backgroundAttachment="fixed"
@@ -30,9 +28,9 @@ export default function Home() {
             top="50%"
             left="50%"
             transform="translate(-50%, -50%)"
-          ></Flex>
-
-          <Hero />
+          >
+            <Text>Click the to resize the vertical navigation bar.</Text>
+          </Flex>
         </Flex>
       </VStack>
     </div>

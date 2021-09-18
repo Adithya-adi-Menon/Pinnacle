@@ -32,7 +32,7 @@ export default function Home() {
             transform="translate(-50%, -50%)"
           ></Flex>
 
-          <Hero />
+          <Hero2 />
         </Flex>
       </VStack>
     </div>
