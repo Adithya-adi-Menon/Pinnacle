@@ -15,7 +15,7 @@ export default function Home() {
 
       <VStack
         w="100%"
-        background="linear-gradient(28deg, rgba(209, 194, 244, 1) 2%, rgba(209, 194, 244, 1) 31%, rgba(221, 217, 232, 1) 51%, rgba(221, 217, 232, 1) 68%, rgba(209, 194, 244, 1) 82%)"
+        background="linear-gradient(28deg, rgba(108, 131, 255, 0.3) 2%, rgba(209, 194, 244, 1) 31%, rgba(221, 217, 232, 1) 51%, rgba(221, 217, 232, 1) 68%, rgba(220, 23, 155, 0.2) 82%)"
         // backgroundImage={useColorModeValue('url(/images/v2/lightbg.png)', 'url(/images/v2/darkbg.png)')}
         backgroundSize="cover"
         backgroundAttachment="fixed"
