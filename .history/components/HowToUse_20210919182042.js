@@ -213,7 +213,8 @@ export default function HowToUse() {
               Take a look at our pitch
             </chakra.p>
             <chakra.p paddingTop="5" fontSize="sm" color="white">
-              We built Descrow to reduce the number of fraudulent transactions.
+              We built Escrow Man to reduce the number of fraudulent
+              transactions.
             </chakra.p>
           </Box>
         </SimpleGrid>
