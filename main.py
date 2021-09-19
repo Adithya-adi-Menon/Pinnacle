@@ -12,6 +12,7 @@ conn = engine.connect()
 
 
 app = Flask(__name__)
+app.secret_key = "My awesome pinnacle super epic secret maybe  a key maybe not who knowS?"
 server = Server("https://horizon-testnet.stellar.org")
 
 # TODO change this into env variable in prod
@@ -46,15 +47,15 @@ def main_page():
 #     return jsonify(dictToReturn)
 
 
-@app.route("/account")
+@app.route("/account", methods=["POST"])
 def account_details():
     data = request.get_json(force=True)
-
+    print(data)
     if data is None:
         return jsonify({"error": "No JSON received"})
 
-    if "pubkey" in data:
-        pub_key = data["pubkey"]
+    if "pub_key" in data:
+        pub_key = data["pub_key"]
         session["pub_key"] = pub_key
     else:
         pub_key = session.get("pub_key", None)
