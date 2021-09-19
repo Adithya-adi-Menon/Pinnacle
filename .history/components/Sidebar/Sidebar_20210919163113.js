@@ -18,7 +18,7 @@ import {
   FiGithub,
 } from "react-icons/fi";
 
-import { IoHelpBuoySharp } from "react-icons/io5";
+import {IoHelpBuoySharp from "react-icons/io5";
 
 import { FaQuestion } from "react-icons/fi";
 import NavItem from "../Sidebar/NavItem";

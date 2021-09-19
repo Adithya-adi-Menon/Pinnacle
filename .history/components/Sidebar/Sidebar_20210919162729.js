@@ -18,9 +18,10 @@ import {
   FiGithub,
 } from "react-icons/fi";
 
-import { IoHelpBuoySharp } from "react-icons/io5";
+import HiSupport from "react-icons/hi";
 
 import { FaQuestion } from "react-icons/fi";
+import { IoPawOutline } from "react-icons/io5";
 import NavItem from "../Sidebar/NavItem";
 
 export default function Sidebar() {
@@ -54,7 +55,7 @@ export default function Sidebar() {
           description="This is the description for the dashboard."
         />
         <NavItem navSize={navSize} icon={FaQuestion} title="Calendar" />
-        <NavItem navSize={navSize} icon={IoHelpBuoySharp} title="Clients" />
+        <NavItem navSize={navSize} icon={FiUser} title="Clients" />
         <NavItem navSize={navSize} icon={FiGithub} title="Animals" />
       </Flex>
 

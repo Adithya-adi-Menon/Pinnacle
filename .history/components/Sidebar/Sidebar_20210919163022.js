@@ -18,9 +18,10 @@ import {
   FiGithub,
 } from "react-icons/fi";
 
-import { IoHelpBuoySharp } from "react-icons/io5";
+import IoHelpBuoySharp from "react-icons/io";
 
 import { FaQuestion } from "react-icons/fi";
+import { IoPawOutline } from "react-icons/io";
 import NavItem from "../Sidebar/NavItem";
 
 export default function Sidebar() {

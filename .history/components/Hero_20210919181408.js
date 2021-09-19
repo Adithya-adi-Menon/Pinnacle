@@ -28,9 +28,7 @@ const Hero = () => {
 
         <chakra.p mb="3" fontSize={{ base: "lg", md: "xl" }} color="#47586B">
           <TextLoop>
-            <span>Descrow enables safe and trustless payments online.</span>
-            <span>Cross border payments secured and simplified.</span>
-
+            <span>Escrow man enables safe and trustless payments online.</span>
             <span>Stay safe from scammers in the digital world.</span>
           </TextLoop>
         </chakra.p>
@@ -103,7 +101,7 @@ const Hero = () => {
           w="full"
           rounded="lg"
           shadow="2xl"
-          src="/images/Gif1.gif"
+          src="/images/Gif1.png"
           alt="Hellonext feedback boards software screenshot"
         />
       </Box>

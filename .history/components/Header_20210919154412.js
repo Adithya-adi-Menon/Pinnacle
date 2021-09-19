@@ -7,6 +7,13 @@ import {
   Heading,
   chakra,
   useColorModeValue,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
 } from "@chakra-ui/react";
 import albedo from "@albedo-link/intent";
 
