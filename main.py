@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify, make_response, session
 from stellar_sdk import Server, Keypair, TransactionBuilder, Network, Account
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String
 from initializeDB import txns
+from flask_cors import CORS, cross_origin
 import json
 
 engine = create_engine(
@@ -12,15 +13,17 @@ conn = engine.connect()
 
 
 app = Flask(__name__)
+CORS(app, supports_credentials=True)
 app.secret_key = "My awesome pinnacle super epic secret maybe  a key maybe not who knowS?"
 server = Server("https://horizon-testnet.stellar.org")
 
 
-@app.after_request
-def after_request(response):
-    header = response.headers
-    header["Access-Control-Allow-Origin"] = "*"
-    return response
+# @app.after_request
+# def after_request(response):
+#     header = response.headers
+#     header["Access-Control-Allow-Origin"] = "http://localhost:3000"
+#     header['Content-Type'] =  'application/x-www-form-urlencoded; charset=UTF-8'
+#     return response
 
 
 # TODO change this into env variable in prod
@@ -80,6 +83,7 @@ def account_details():
 @app.route("/generate_payment", methods=["POST"])
 def generate_payment():
     """POST params
+    name:
     description:
     price:
     depositwid:
@@ -93,6 +97,7 @@ def generate_payment():
 
     try:
         stmt = txns.insert().values(
+            name=data["name"],
             description=data["description"],
             price=data["price"],
             depositwid=data["depositwid"],
