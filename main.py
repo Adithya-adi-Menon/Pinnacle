@@ -15,6 +15,14 @@ app = Flask(__name__)
 app.secret_key = "My awesome pinnacle super epic secret maybe  a key maybe not who knowS?"
 server = Server("https://horizon-testnet.stellar.org")
 
+
+@app.after_request
+def after_request(response):
+    header = response.headers
+    header["Access-Control-Allow-Origin"] = "*"
+    return response
+
+
 # TODO change this into env variable in prod
 # Loading esckrow account
 with open("eskcrow.json") as f:
@@ -50,7 +58,6 @@ def main_page():
 @app.route("/account", methods=["POST"])
 def account_details():
     data = request.get_json(force=True)
-    print(data)
     if data is None:
         return jsonify({"error": "No JSON received"})
 
@@ -66,6 +73,7 @@ def account_details():
         details = server.accounts().account_id(pub_key).call()
         return details
     except Exception as err:
+        print(err)
         return make_response({"error": f"Invalid pub_key"}, 403)
 
 
