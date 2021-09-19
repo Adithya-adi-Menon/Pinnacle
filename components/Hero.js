@@ -9,9 +9,10 @@ import {
   Button,
   Spacer,
   HStack,
+  
 } from "@chakra-ui/react";
 import TextLoop from "react-text-loop";
-
+import { Link } from "@chakra-ui/layout";
 const Hero = () => {
   return (
     <HStack bg={useColorModeValue("brand.500")} px={8} py={24} mx="auto">
@@ -50,6 +51,7 @@ const Hero = () => {
         <br />
 
         <HStack spacing="5">
+          <Link href="/buy">
           <Button
             paddingY="7"
             display="inline-flex"
@@ -75,7 +77,8 @@ const Hero = () => {
               I am a buyer
             </chakra.a>
           </Button>
-
+            </Link>
+            <Link href="seller/seller1">
           <Button
             marginStart="10"
             paddingY="7"
@@ -102,6 +105,7 @@ const Hero = () => {
               I am a seller
             </chakra.a>
           </Button>
+          </Link>
         </HStack>
         <Image paddingTop="10" src="/images/MadeAtPinnacle.png" />
       </Box>
