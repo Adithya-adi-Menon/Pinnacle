@@ -3,7 +3,13 @@ import { VStack } from "@chakra-ui/layout";
 import Sidebar from "../components/Sidebar/Sidebar";
 import { Flex, Text, IconButton } from "@chakra-ui/react";
 import { FiMenu } from "react-icons/fi";
-
+import { Heading } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/layout";
+import { Input } from "@chakra-ui/react"
+import { Stack  } from "@chakra-ui/layout";
+import { Spacer } from "@chakra-ui/react";
+import { Square } from "@chakra-ui/layout";
+import { Center } from "@chakra-ui/layout";
 export default function Seller() {
   return (
     <div>
@@ -23,16 +29,36 @@ export default function Seller() {
       >
         <Flex w="100%" h="100%">
           <Sidebar />
-          <Flex
-            pos="absolute"
-            top="50%"
-            left="50%"
-            transform="translate(-50%, -50%)"
-          >
-              
-           
-          </Flex>
-        </Flex>
+          <Flex 
+          pos="absolute"
+          top="15%"
+          left="35%"
+          transform="translate(-50%, -50%)" >
+
+         
+          <Box maxW="35rem">
+  <Heading mb={4}>Seller</Heading>
+  <Text fontSize="xl">
+  Start selling your product/ commodity/ NFT/ in just a few clicks.
+  </Text>
+  
+</Box>
+
+</Flex>
+<Box maxW="35rem">
+<Flex color="white">
+  <Center w="100px" bg="green.500">
+    <Text>Box 1</Text>
+  </Center>
+  <Square bg="blue.500" size="150px">
+    <Text>Box 2</Text>
+  </Square>
+  <Box flex="1" bg="tomato">
+    <Text>Box 3</Text>
+  </Box>
+</Flex>
+</Box>
+    </Flex>
       </VStack>
     </div>
   );
