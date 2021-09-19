@@ -79,7 +79,7 @@ const Seller2 = () => {
               <AlertIcon color="gray.800" />
               <b>Status : </b>
               <Spacer />
-              Waiting for payment to be received.
+              Payment Received Successfully.
               <Spacer />
             </Alert>
             <br></br>
@@ -106,7 +106,7 @@ const Seller2 = () => {
                     rounded="md"
                     color={useColorModeValue("white")}
                   >
-                    https://pinnacle.us.org
+                    http://localhost:5000/#jj2sdf2s
                   </chakra.a>
                   <Center>
                     <IconButton

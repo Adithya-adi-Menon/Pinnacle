@@ -170,6 +170,7 @@ const BuyScreen3 = () => {
               </Flex> */}
 
               <Box padding="3">
+                <Link href="/buy/buy4">
                 <Button
                   marginStart="10"
                   paddingX="10"
@@ -197,6 +198,7 @@ const BuyScreen3 = () => {
                     Release Payment to Seller
                   </chakra.a>
                 </Button>
+                </Link>
               </Box>
               <Box padding="3">
                 <Button

@@ -10,6 +10,7 @@ import {
   Spacer,
   HStack,
 } from "@chakra-ui/react";
+import { Link } from "@chakra-ui/layout";
 import { Input } from "@chakra-ui/react";
 import TextLoop from "react-text-loop";
 
@@ -56,6 +57,7 @@ const Buy1 = () => {
         <br />
         <br />
         <br />
+        <Link href="buy/buy2">
         <Button
           paddingY="7"
           display="inline-flex"
@@ -81,6 +83,7 @@ const Buy1 = () => {
             Buy
           </chakra.a>
         </Button>
+        </Link>
       </Box>
       <Box
         paddingTop="30"

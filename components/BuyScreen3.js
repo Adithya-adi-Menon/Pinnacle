@@ -18,6 +18,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { Input } from "@chakra-ui/react";
+import { Link } from "@chakra-ui/layout";
 import Lottie from "react-lottie-player";
 import success from "./success-tick.json";
 
@@ -71,7 +72,7 @@ const BuyScreen3 = () => {
         <chakra.p mb="3" fontSize={{ base: "lg", md: "xl" }} color="#47586B">
           <Text>
             {" "}
-            Thanks for purchasing. Your code is live at https://github.com/xyz .
+            Thanks for purchasing. Your code is live at https://pinnacle.us.org .
             Please verify and release payment asap.{" "}
           </Text>
           {/* <VStack align="initial">
@@ -171,6 +172,7 @@ const BuyScreen3 = () => {
               </Flex> */}
 
               <Box padding="3">
+                <Link href="/buy/buy4">
                 <Button
                   marginStart="10"
                   paddingX="10"
@@ -198,6 +200,7 @@ const BuyScreen3 = () => {
                     Release Payment to Seller
                   </chakra.a>
                 </Button>
+                </Link>
               </Box>
               <Box padding="3">
                 <Button
@@ -230,7 +233,7 @@ const BuyScreen3 = () => {
               </Box>
             </SimpleGrid>
             <Box padding="3">
-              <Button
+              {/* <Button
                 marginStart="10"
                 paddingX="10"
                 paddingY="7"
@@ -256,7 +259,7 @@ const BuyScreen3 = () => {
                 >
                   Download Payment Receipt (IPFS)
                 </chakra.a>
-              </Button>
+              </Button> */}
             </Box>
           </Box>
           <chakra.p fontSize="xs" textAlign="center" color="gray.600">

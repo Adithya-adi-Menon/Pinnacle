@@ -13,7 +13,7 @@ class Generatepay {
             "conditions":conditions,
             "secretproduct":secretproduct
 
-        },{headers: "Cookie:session=eyJwdWJfa2V5IjoiR0NWMkxRNllBVk42Tk9USUNNWU1TRkJBQUxINVQyNFMyVzNBUDQyRFdTN1o3RUNTQjNWM1NURFcifQ.YUcqdA.urZ6S51_pJjGxmZFM9vAMdhvByI"}).then(Response=>{
+        },{}).then(Response=>{
             console.log(Response.data)
             return Response.data;
         }).catch(Error)

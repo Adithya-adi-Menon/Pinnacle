@@ -16,6 +16,8 @@ import {
   VisuallyHidden,
   Icon,
 } from "@chakra-ui/react";
+
+import { Link } from "@chakra-ui/layout";
 import { Input } from "@chakra-ui/react";
 import TextLoop from "react-text-loop";
 
@@ -56,19 +58,20 @@ const BuyScreen2 = () => {
         <chakra.p mb="3" fontSize={{ base: "lg", md: "xl" }} color="#47586B">
           <VStack align="initial">
             <span>
-              <b>Name :</b> XXX
+              <b>Name :</b> Pinnacle
             </span>
             <span>
-              <b>Description :</b> XXX
+              <b>Description :</b> Olympics Of Hackathons
             </span>
             <span>
-              <b>Price :</b> XXX
+              <b>Price :</b> 10 xlm
             </span>
             <span>
-              <b>Payment address to deposit :</b> XXX
+              <b>Payment address to deposit :</b> GDMC47LOWBL2ZRZQSRYWO4D4HI3JG3EIJWFJ6WMYSDPKRNNKIV33N3VK
+
             </span>
             <span>
-              <b>Condition(s) :</b> XXX
+              <b>Condition(s) :</b> No Refund
             </span>
           </VStack>
         </chakra.p>
@@ -104,7 +107,8 @@ const BuyScreen2 = () => {
               borderBottom="solid 1px"
               borderColor={useColorModeValue("gray.200", "gray.700")}
             >
-              <Flex>
+               <Image marginStart="20" paddingTop="10" src="/images/frame.png" />
+              {/* <Flex>
                 <VisuallyHidden>First Name</VisuallyHidden>
                 <Input
                   mt={0}
@@ -130,9 +134,10 @@ const BuyScreen2 = () => {
                   placeholder="Password"
                   required="true"
                 />
-              </Flex>
+              </Flex> */}
             </SimpleGrid>
             <Box padding="3">
+              <Link href="/buy/buy3">
               <Button
                 marginStart="10"
                 paddingX="10"
@@ -157,9 +162,10 @@ const BuyScreen2 = () => {
                   rounded="md"
                   color={useColorModeValue("white")}
                 >
-                  Verify Payment
+                  Pay To descrow
                 </chakra.a>
               </Button>
+              </Link>
             </Box>
           </Box>
           <chakra.p fontSize="xs" textAlign="center" color="gray.600">

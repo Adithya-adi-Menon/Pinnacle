@@ -12,6 +12,7 @@ import {
   
 } from "@chakra-ui/react";
 import { Input } from "@chakra-ui/react";
+import { Link } from "@chakra-ui/layout";
 import TextLoop from "react-text-loop";
 import generte_pay from "./services/generte_pay";
 
@@ -240,7 +241,7 @@ class SellerA extends React.Component{
                 />
               </Box>
             </HStack>
-      
+      <Link href="/seller/seller2">
             <Button
               marginTop="5"
               paddingY="7"
@@ -251,7 +252,7 @@ class SellerA extends React.Component{
               _hover={{
                 bgGradient: "linear(to-l, #4F3BA9, #CB5AFD)",
               }}
-              type="submit"
+              
             >
               <chakra.a
                 display="inline-flex"
@@ -268,6 +269,7 @@ class SellerA extends React.Component{
                 Generate Link
               </chakra.a>
             </Button>
+            </Link>
             </form>
           </Box>
     );
