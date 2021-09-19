@@ -1,15 +1,17 @@
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String
+from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean
 
 meta_txn = MetaData()
 txns = Table(
     "txn",
     meta_txn,
-    Column("id", Integer, primary_key=True),
+    Column("uid", Integer, primary_key=True),
+    Column("txid", Integer),  # Txn ID
     Column("description", String),
     Column("price", Integer),
-    Column("depositWID", String),
+    Column("depositwid", String),
     Column("conditions", String),
     Column("secretproduct", String),
+    Column("completed", Boolean),
 )
 
 if __name__ == "__main__":
