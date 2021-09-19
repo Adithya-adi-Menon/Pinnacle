@@ -832,9 +832,9 @@
   "resolved" "https://registry.npmjs.org/@next/react-refresh-utils/-/react-refresh-utils-11.1.2.tgz"
   "version" "11.1.2"
 
-"@next/swc-win32-x64-msvc@11.1.2":
-  "integrity" "sha512-e/pIKVdB+tGQYa1cW3sAeHm8gzEri/HYLZHT4WZojrUxgWXqx8pk7S7Xs47uBcFTqBDRvK3EcQpPLf3XdVsDdg=="
-  "resolved" "https://registry.npmjs.org/@next/swc-win32-x64-msvc/-/swc-win32-x64-msvc-11.1.2.tgz"
+"@next/swc-linux-x64-gnu@11.1.2":
+  "integrity" "sha512-YcDHTJjn/8RqvyJVB6pvEKXihDcdrOwga3GfMv/QtVeLphTouY4BIcEUfrG5+26Nf37MP1ywN3RRl1TxpurAsQ=="
+  "resolved" "https://registry.npmjs.org/@next/swc-linux-x64-gnu/-/swc-linux-x64-gnu-11.1.2.tgz"
   "version" "11.1.2"
 
 "@node-rs/helper@1.2.1":
@@ -3461,6 +3461,7 @@
   "resolved" "https://registry.npmjs.org/react-is/-/react-is-17.0.2.tgz"
   "version" "17.0.2"
 
+<<<<<<< HEAD
 "react-lottie-player@^1.4.0":
   "integrity" "sha512-p2k6mp7gdMBuvnzO9vezQR/6F1e3oaiSxqC+9N+bKzpa3XQaaa401iOD0toM0xWA76AuaGpqr8Y7pqmdA4xMjA=="
   "resolved" "https://registry.npmjs.org/react-lottie-player/-/react-lottie-player-1.4.0.tgz"
@@ -3470,6 +3471,8 @@
     "lodash.clonedeep" "^4.5.0"
     "lottie-web" "^5.7.6"
 
+=======
+>>>>>>> 8f6a0911a3454f3b2d237f3ee8fa9fb234acf4ab
 "react-motion@^0.5.2":
   "integrity" "sha512-9q3YAvHoUiWlP3cK0v+w1N5Z23HXMj4IF4YuvjvWegWqNPfLXsOBE/V7UvQGpXxHFKRQQcNcVQE31g9SB/6qgQ=="
   "resolved" "https://registry.npmjs.org/react-motion/-/react-motion-0.5.2.tgz"
@@ -3530,7 +3533,11 @@
     "prop-types" "15.7.2"
     "youtube-player" "5.5.2"
 
+<<<<<<< HEAD
 "react@*", "react@^0.14.9 || ^15.3.0 || ^16.0.0", "react@^15.0.1 || ^16.0.1", "react@^15.3.0 || ^16.0.0 || ^17.0.0", "react@^16.0.0 || ^17.0.0", "react@^16.8.0 || ^17.0.0", "react@^16.8.0 || 17.x", "react@^17.0.2", "react@>= 16.8.0 || 17.x.x || 18.x.x", "react@>=0.14.1", "react@>=16.8 || ^17.0.0", "react@>=16.8.0", "react@>=16.8.6", "react@17.0.2":
+=======
+"react@*", "react@^0.14.9 || ^15.3.0 || ^16.0.0", "react@^15.0.1 || ^16.0.1", "react@^15.3.0 || ^16.0.0 || ^17.0.0", "react@^16.8.0 || ^17.0.0", "react@^16.8.0 || 17.x", "react@^17.0.2", "react@>= 16.8.0 || 17.x.x || 18.x.x", "react@>=0.14.1", "react@>=16.8 || ^17.0.0", "react@>=16.8.0", "react@>=16.8.6", "react@17.0.2":
+>>>>>>> 8f6a0911a3454f3b2d237f3ee8fa9fb234acf4ab
   "integrity" "sha512-gnhPt75i/dq/z3/6q/0asP78D0u592D5L1pd7M8P+dck6Fu/jJeL6iVVK23fptSUZj8Vjf++7wXA8UNclGQcbA=="
   "resolved" "https://registry.npmjs.org/react/-/react-17.0.2.tgz"
   "version" "17.0.2"
