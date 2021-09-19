@@ -9,6 +9,7 @@ import HowToUse from "../components/HowToUse";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 import { Spacer, Box, Button, Heading } from "@chakra-ui/react";
+import albedo from '@albedo-link/intent';
 
 export default function Home() {
   return (
