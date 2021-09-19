@@ -95,12 +95,15 @@ def generate_payment():
     if data is None:
         return jsonify({"error": "No JSON received"})
 
+    if not (pub_key := session.get("pub_key", None)):
+        return make_response({"error": "wallet not connected"}, 403)
+
     try:
         stmt = txns.insert().values(
             name=data["name"],
             description=data["description"],
             price=data["price"],
-            depositwid=data["depositwid"],
+            depositwid=pub_key,
             conditions=data["conditions"],
             secretproduct=data["secretproduct"],
         )
@@ -114,6 +117,16 @@ def generate_payment():
         value=data["price"],
         memo="Esckrow Transaction",
     )
+
+
+@app.route("/get_eskcrow_addr", methods=["GET"])
+def get_eskcrow_addr():
+    return {"pub_key": eskcrow_keypair.public_key}
+
+
+@app.route("/get_my_id", methods=["GET"])
+def get_my_id():
+    return {"pub_key": session.get("pub_key", None)}
 
 
 @app.route("/update_payment", methods=["POST"])
