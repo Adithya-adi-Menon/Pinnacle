@@ -15,13 +15,41 @@ import {
   ModalBody,
   ModalCloseButton,
 } from "@chakra-ui/react";
+import albedo from '@albedo-link/intent';
 
-export default function Header() {
+import authServices from "./services/auth-services";
+export default class  Header extends React.Component {
+
+  constructor(props){
+    super(props);
+    
+    this.handleClick = this.handleClick.bind(this);
+    
+    this.state ={
+      keyvalue: "Connect Wallet"
+    };
+  }
+  handleClick = (e) => {
+    albedo.publicKey({
+  })
+      .then(res => authServices.account_details(res.pubkey).then(Response =>{
+        this.setState({
+          keyvalue:Response.account_id
+        })
+        console.log(Response);
+      })
+     )
+  }
+render(){
+
+  const classes = this.props;
+
   return (
     <Flex width="100%">
       <Spacer />
       <Box paddingTop="5" paddingRight="5">
         <Button
+        onClick= {this.handleClick}
           marginStart="10"
           paddingY="7"
           display="inline-flex"
@@ -42,12 +70,14 @@ export default function Header() {
             fontWeight="bold"
             w="full"
             rounded="md"
-            color={useColorModeValue("white")}
+           color="white"
           >
-            Connect Wallet
+            {this.state.keyvalue}
+            {/* Connect Wallet */}
           </chakra.a>
         </Button>
       </Box>
     </Flex>
   );
+}
 }
