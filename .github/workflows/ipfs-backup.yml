@@ -1,0 +1,24 @@
+name: IPFS Backup
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prepare repository
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
