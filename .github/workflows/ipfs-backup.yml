@@ -1,3 +1,4 @@
+
 name: IPFS Backup
 
 on:
@@ -11,14 +12,56 @@ jobs:
   backup:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
+    env:
+      UPLOAD_ID: ${{ github.run_id }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Prepare repository
+      - name: Upload to IPFS
         run: |
-          git config --global user.name "GitHub Action"
-          git config --global user.email "action@github.com"
+          # Set API URL
+          API_URL="${{ vars.NEXT_PUBLIC_API_URL || 'https://b7ed-31-205-124-16.ngrok-free.app' }}"
+          echo "API URL: $API_URL"
+          
+          # Calculate total chunks
+          CHUNK_SIZE=50000000 # 50MB chunks
+          TOTAL_CHUNKS=$(tar -czf - --exclude='.git' . | wc -c | awk -v size=$CHUNK_SIZE '{print int(($1+size-1)/size)}')
+          echo "Total chunks: $TOTAL_CHUNKS"
+          
+          # Create temporary directory for chunks
+          TEMP_DIR=$(mktemp -d)
+          echo "Temp directory: $TEMP_DIR"
+          
+          # Split repository into chunks
+          cd $TEMP_DIR
+          tar -C $GITHUB_WORKSPACE -czf - --exclude='.git' . | split -b $CHUNK_SIZE - chunk-
+          
+          # Upload each chunk
+          CHUNK_NUM=1
+          for chunk in chunk-*; do
+            echo "Uploading chunk $CHUNK_NUM of $TOTAL_CHUNKS"
+            curl -X POST \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              -H "X-GitHub-Repository: ${{ github.repository }}" \
+              -H "X-Upload-Id: ${{ env.UPLOAD_ID }}" \
+              -H "X-Chunk-Number: $CHUNK_NUM" \
+              -H "X-Total-Chunks: $TOTAL_CHUNKS" \
+              -F "chunk=@$chunk" \
+              "$API_URL/api/storage/upload/chunk"
+            CHUNK_NUM=$((CHUNK_NUM+1))
+          done
+          
+          # Cleanup temporary directory
+          rm -rf $TEMP_DIR
+          
+          # Complete upload
+          echo "Completing upload..."
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"uploadId\":\"${{ env.UPLOAD_ID }}\"}" \
+            "$API_URL/api/storage/upload/complete"
