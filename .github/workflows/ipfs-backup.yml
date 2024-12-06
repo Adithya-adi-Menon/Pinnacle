@@ -31,7 +31,7 @@ jobs:
           COMMIT_HASH: ${{ steps.commit.outputs.hash }}
         run: |
           # Set API URL
-          API_URL="${{ vars.NEXT_PUBLIC_API_URL || 'https://1c63-31-205-124-16.ngrok-free.app' }}"
+          API_URL="${{ vars.NEXT_PUBLIC_API_URL || 'https://c6fa-31-205-124-186.ngrok-free.app' }}"
           echo "API URL: $API_URL"
           
           # Calculate total chunks
@@ -58,6 +58,7 @@ jobs:
               -H "X-Chunk-Number: $CHUNK_NUM" \
               -H "X-Total-Chunks: $TOTAL_CHUNKS" \
               -H "X-GitHub-Commit-Hash: $COMMIT_HASH" \
+              -H "X-GitHub-Username: ${{ github.actor }}" \
               -F "chunk=@$chunk" \
               "$API_URL/api/storage/upload/chunk")
             echo "Response: $RESPONSE"
@@ -68,8 +69,7 @@ jobs:
           rm -rf $TEMP_DIR
           
           # Complete upload and get CID
-          RESULT=$(curl -X POST             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"             -H "Content-Type: application/json"             -H "X-GitHub-Repository: ${{ github.repository }}" \
-            -H "X-GitHub-Commit-Hash: $COMMIT_HASH"             -d "{\"uploadId\":\"${{ env.UPLOAD_ID }}\"}"             "$API_URL/api/storage/upload/complete")
+          RESULT=$(curl -X POST             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"             -H "Content-Type: application/json"             -H "X-GitHub-Repository: ${{ github.repository }}"             -H "X-GitHub-Commit-Hash: $COMMIT_HASH"             -H "X-GitHub-Username: ${{ github.actor }}"             -d "{\"uploadId\":\"${{ env.UPLOAD_ID }}\"}"             "$API_URL/api/storage/upload/complete")
           
           echo "Result: $RESULT"
           CID=$(echo "$RESULT" | jq -r '.cid // empty')
