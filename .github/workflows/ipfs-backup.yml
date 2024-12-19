@@ -31,7 +31,7 @@ jobs:
           COMMIT_HASH: ${{ steps.commit.outputs.hash }}
         run: |
           # Set API URL
-          API_URL="${{ vars.NEXT_PUBLIC_API_URL || 'https://c6fa-31-205-124-186.ngrok-free.app' }}"
+          API_URL="${{ vars.NEXT_PUBLIC_API_URL || 'https://gitvault.xyz' }}"
           echo "API URL: $API_URL"
           
           # Calculate total chunks
