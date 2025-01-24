@@ -1,0 +1,247 @@
+
+name: IPFS Backup
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      UPLOAD_ID: ${{ github.run_id }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get commit hash
+        id: commit
+        run: echo "hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Upload to IPFS
+        id: upload
+        env:
+          COMMIT_HASH: ${{ steps.commit.outputs.hash }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Set API URL and timeout
+          API_URL="${{ vars.NEXT_PUBLIC_API_URL || 'https://www.gitvault.xyz' }}"
+          API_URL=${API_URL%/}  # Remove trailing slash if present
+          API_URL=${API_URL/#http:/https:}  # Force HTTPS
+          API_URL="$API_URL/api"  # Add /api prefix
+          CURL_TIMEOUT=300
+          
+          echo "API URL: $API_URL"
+          
+          # Create temp directory for the archive
+          TEMP_DIR=$(mktemp -d)
+          ARCHIVE_PATH="$TEMP_DIR/repo.tar.gz"
+          CHUNK_SIZE=10M  # Reduce chunk size to 10MB
+          
+          echo "Creating archive..."
+          tar --exclude='.git' -czf "$ARCHIVE_PATH" .
+          
+          # Get total size
+          TOTAL_SIZE=$(stat -c%s "$ARCHIVE_PATH")
+          echo "Total archive size: $TOTAL_SIZE bytes"
+          
+          # Split and upload chunks
+          cd "$TEMP_DIR"
+          split -b $CHUNK_SIZE -d repo.tar.gz "chunk-"
+          
+          # Initialize upload with redirect following
+          echo "Initializing upload..."
+          echo "Sending request to: $API_URL/storage/upload/init"
+          echo "Request payload: {\"totalSize\":$TOTAL_SIZE}"
+          
+          RESPONSE=$(curl -v -s -X POST "$API_URL/storage/upload/init" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "X-Repository: $GITHUB_REPOSITORY" \
+            -H "Content-Type: application/json" \
+            -H "Accept: application/json" \
+            --connect-timeout 30 \
+            --max-time 60 \
+            --location-trusted \
+            --retry 3 \
+            --retry-delay 2 \
+            -d "{\"totalSize\":$TOTAL_SIZE}" 2>&1)
+          
+          echo "Full init response:"
+          echo "$RESPONSE"
+          
+          # Extract the response body (everything after the last empty line)
+          RESPONSE_BODY=$(echo "$RESPONSE" | awk '/^$/{p=NR+1}(NR>=p){print}')
+          
+          if [ -z "$RESPONSE_BODY" ]; then
+            echo "Error: Empty response from server"
+            echo "Full response: $RESPONSE"
+            exit 1
+          fi
+          
+          UPLOAD_ID=$(echo "$RESPONSE_BODY" | jq -r '.uploadId // empty')
+          if [ -z "$UPLOAD_ID" ]; then
+            echo "Error: No upload ID in response"
+            echo "Response body: $RESPONSE_BODY"
+            echo "Full response: $RESPONSE"
+            exit 1
+          fi
+          
+          echo "Upload ID: $UPLOAD_ID"
+          
+          # Upload chunks
+          CHUNK_NUM=1
+          UPLOAD_SUCCESS=false
+          
+          for chunk in chunk-*; do
+            echo "Uploading chunk $CHUNK_NUM: $chunk"
+            MAX_RETRIES=3
+            RETRY_COUNT=0
+            CHUNK_UPLOADED=false
+            
+            while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ "$CHUNK_UPLOADED" = false ]; do
+              RESPONSE=$(curl -v -s -X POST "$API_URL/storage/upload/chunk" \
+                -H "Authorization: Bearer $GITHUB_TOKEN" \
+                -H "X-Repository: $GITHUB_REPOSITORY" \
+                -H "X-Upload-Id: $UPLOAD_ID" \
+                -H "X-Chunk-Number: $CHUNK_NUM" \
+                -H "Accept: application/json" \
+                --connect-timeout 30 \
+                --max-time 60 \
+                --location-trusted \
+                --retry 3 \
+                --retry-delay 2 \
+                -F "chunk=@$chunk" \
+                -w "\n%{http_code}" 2>&1)
+              
+              HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+              RESPONSE_BODY=$(echo "$RESPONSE" | sed '$d')
+              
+              if [ "$HTTP_CODE" = "200" ]; then
+                if echo "$RESPONSE_BODY" | jq -e . >/dev/null 2>&1; then
+                  echo "Successfully uploaded chunk $CHUNK_NUM"
+                  CHUNK_UPLOADED=true
+                else
+                  echo "Warning: Invalid JSON response for chunk $CHUNK_NUM"
+                  echo "Response body: $RESPONSE_BODY"
+                  RETRY_COUNT=$((RETRY_COUNT + 1))
+                  [ $RETRY_COUNT -lt $MAX_RETRIES ] && sleep 5
+                fi
+              else
+                echo "Failed to upload chunk $CHUNK_NUM (HTTP $HTTP_CODE)"
+                echo "Response body: $RESPONSE_BODY"
+                RETRY_COUNT=$((RETRY_COUNT + 1))
+                [ $RETRY_COUNT -lt $MAX_RETRIES ] && sleep 5
+              fi
+            done
+            
+            if [ "$CHUNK_UPLOADED" = false ]; then
+              echo "Failed to upload chunk $CHUNK_NUM after $MAX_RETRIES retries"
+              exit 1
+            fi
+            
+            CHUNK_NUM=$((CHUNK_NUM + 1))
+          done
+          
+          # Complete upload with retries
+          echo "Completing upload..."
+          MAX_COMPLETION_RETRIES=5
+          COMPLETION_RETRY_COUNT=0
+          COMPLETION_SUCCESS=false
+
+          while [ $COMPLETION_RETRY_COUNT -lt $MAX_COMPLETION_RETRIES ] && [ "$COMPLETION_SUCCESS" = false ]; do
+            echo "Attempting completion (Attempt $((COMPLETION_RETRY_COUNT + 1)) of $MAX_COMPLETION_RETRIES)..."
+            
+            RESPONSE=$(curl -v -s -X POST "$API_URL/storage/upload/complete" \
+              -H "Authorization: Bearer $GITHUB_TOKEN" \
+              -H "X-Repository: $GITHUB_REPOSITORY" \
+              -H "X-Upload-Id: $UPLOAD_ID" \
+              -H "Content-Type: application/json" \
+              -H "Accept: application/json" \
+              --connect-timeout 30 \
+              --max-time 120 \
+              -d "{}" \
+              -w "\n%{http_code}" 2>&1)
+            
+            HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+            RESPONSE_BODY=$(echo "$RESPONSE" | sed '$d')
+            
+            if [ "$HTTP_CODE" = "200" ]; then
+              if echo "$RESPONSE_BODY" | jq -e . >/dev/null 2>&1; then
+                CID=$(echo "$RESPONSE_BODY" | jq -r '.cid // empty')
+                if [ -n "$CID" ]; then
+                  echo "Upload completed successfully"
+                  echo "CID: $CID"
+                  echo "::set-output name=cid::$CID"
+                  COMPLETION_SUCCESS=true
+                  UPLOAD_SUCCESS=true
+                  break
+                else
+                  echo "Error: No CID in response"
+                  echo "Response body: $RESPONSE_BODY"
+                fi
+              else
+                echo "Error: Invalid JSON response from complete endpoint"
+                echo "Response body: $RESPONSE_BODY"
+              fi
+            elif [ "$HTTP_CODE" = "504" ] || [ "$HTTP_CODE" = "502" ] || [ "$HTTP_CODE" = "503" ]; then
+              echo "Server timeout or error (HTTP $HTTP_CODE). Retrying..."
+              echo "Response body: $RESPONSE_BODY"
+            else
+              echo "Failed to complete upload (HTTP $HTTP_CODE)"
+              echo "Response body: $RESPONSE_BODY"
+            fi
+            
+            COMPLETION_RETRY_COUNT=$((COMPLETION_RETRY_COUNT + 1))
+            if [ $COMPLETION_RETRY_COUNT -lt $MAX_COMPLETION_RETRIES ]; then
+              SLEEP_TIME=$((10 * COMPLETION_RETRY_COUNT))  # Progressive backoff
+              echo "Waiting $SLEEP_TIME seconds before retrying..."
+              sleep $SLEEP_TIME
+            fi
+          done
+
+          if [ "$COMPLETION_SUCCESS" = false ]; then
+            echo "Failed to complete upload after $MAX_COMPLETION_RETRIES attempts"
+            exit 1
+          fi
+          
+          # Clean up only if upload was successful
+          [ "$UPLOAD_SUCCESS" = true ] && rm -rf "$TEMP_DIR"
+
+      - name: Update .gitvault and README
+        if: success()
+        run: |
+          # Update or create .gitvault file
+          if [ ! -f .gitvault ]; then
+            echo "repository:" > .gitvault
+            echo "  name: $GITHUB_REPOSITORY" >> .gitvault
+          fi
+          
+          # Update current CID and add to history
+          echo "current:" >> .gitvault
+          echo "  cid: ${{ steps.upload.outputs.cid }}" >> .gitvault
+          echo "  date: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> .gitvault
+          echo "history:" >> .gitvault
+          echo "  - cid: ${{ steps.upload.outputs.cid }}" >> .gitvault
+          echo "    date: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> .gitvault
+          
+          # Update README.md with badge
+          if [ -f README.md ]; then
+            sed -i '/^[![GitVault Backup]/d' README.md
+            sed -i "1i [![GitVault Backup](https://img.shields.io/badge/GitVault-Protected-blue)](https://ipfs.io/ipfs/${{ steps.upload.outputs.cid }})" README.md
+          else
+            echo "[![GitVault Backup](https://img.shields.io/badge/GitVault-Protected-blue)](https://ipfs.io/ipfs/${{ steps.upload.outputs.cid }})" > README.md
+          fi
+          
+          # Configure git and push changes
+          git config --global user.name "GitVault Bot"
+          git config --global user.email "bot@gitvault.app"
+          git add .gitvault README.md
+          git commit -m "Update GitVault CID and README badge [skip ci]" || exit 0
+          git push
