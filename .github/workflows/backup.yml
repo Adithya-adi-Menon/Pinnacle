@@ -30,9 +30,8 @@ jobs:
           API_URL: ${{ vars.NEXT_PUBLIC_API_URL || 'https://www.gitvault.xyz' }}
         run: |
           # Setup API URL
-          API_URL=${API_URL%/}
-          API_URL=${API_URL/#http:/https:}
-          API_URL="$API_URL/api"
+          API_URL="${API_URL%/}"
+          API_URL="${API_URL/#http:/https:}"
           
           echo "Using API URL: $API_URL"
           
@@ -47,77 +46,44 @@ jobs:
           TOTAL_SIZE=$(stat -f%z "$ARCHIVE_PATH" 2>/dev/null || stat -c%s "$ARCHIVE_PATH")
           echo "Archive size: $TOTAL_SIZE bytes"
           
-          # Initialize upload
-          echo "Initializing upload..."
-          echo "Sending request to: $API_URL/storage/upload/init"
-          echo "Request payload: {\"totalSize\": $TOTAL_SIZE}"
-          
-          RESPONSE=$(curl -v -s -X POST "$API_URL/storage/upload/init" \
-            -H "Authorization: Bearer $GITHUB_TOKEN" \
-            -H "X-Repository: $GITHUB_REPOSITORY" \
-            -H "Content-Type: application/json" \
-            -H "Accept: application/json" \
-            --retry 3 \
-            --retry-delay 2 \
-            --write-out "\nHTTP_CODE:%{http_code}" \
-            -d "{\"totalSize\": $TOTAL_SIZE}" 2>&1)
-          
-          # Extract HTTP code and response body
-          HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_CODE:" | cut -d':' -f2)
-          RESPONSE_BODY=$(echo "$RESPONSE" | sed -n '/^HTTP_CODE/!p')
-          
-          echo "HTTP Code: $HTTP_CODE"
-          echo "Response Body: $RESPONSE_BODY"
-          
-          if [ "$HTTP_CODE" != "200" ]; then
-            echo "Error: Server returned HTTP $HTTP_CODE"
-            echo "Full response: $RESPONSE"
-            exit 1
-          fi
-          
-          # Extract upload ID
-          UPLOAD_ID=$(echo "$RESPONSE_BODY" | grep -v "HTTP_CODE:" | jq -r '.uploadId')
-          if [ -z "$UPLOAD_ID" ] || [ "$UPLOAD_ID" = "null" ]; then
-            echo "Failed to get upload ID"
-            echo "Response: $RESPONSE_BODY"
-            exit 1
-          fi
-          
-          echo "Upload ID: $UPLOAD_ID"
+          # Generate upload ID
+          UPLOAD_ID="$(date +%s)-$(openssl rand -hex 6)"
+          echo "Generated upload ID: $UPLOAD_ID"
           
           # Split and upload chunks
           cd "$TEMP_DIR"
           split -b 8M -d "$ARCHIVE_PATH" "chunk-"
           
+          # Count total chunks
+          TOTAL_CHUNKS=$(ls chunk-* | wc -l)
+          echo "Total chunks: $TOTAL_CHUNKS"
+          
           # Upload chunks
           CHUNK_NUM=1
           for chunk in chunk-*; do
-            echo "Uploading chunk $CHUNK_NUM: $chunk"
+            echo "Uploading chunk $CHUNK_NUM/$TOTAL_CHUNKS: $chunk"
             for retry in {1..3}; do
-              RESPONSE=$(curl -v -s -X POST "$API_URL/storage/upload/chunk" \
+              RESPONSE=$(curl -v -s "$API_URL/api/storage/upload/chunk" \
+                -X POST \
                 -H "Authorization: Bearer $GITHUB_TOKEN" \
                 -H "X-Repository: $GITHUB_REPOSITORY" \
                 -H "X-Upload-Id: $UPLOAD_ID" \
                 -H "X-Chunk-Number: $CHUNK_NUM" \
+                -H "X-Total-Chunks: $TOTAL_CHUNKS" \
                 -H "Accept: application/json" \
                 -F "chunk=@$chunk" \
                 --retry 3 \
-                --retry-delay 2 \
-                --write-out "\nHTTP_CODE:%{http_code}" 2>&1)
+                --retry-delay 2)
               
-              HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_CODE:" | cut -d':' -f2)
-              RESPONSE_BODY=$(echo "$RESPONSE" | sed -n '/^HTTP_CODE/!p')
-              
-              if [ "$HTTP_CODE" = "200" ] && echo "$RESPONSE_BODY" | jq -e '.success' >/dev/null; then
+              if echo "$RESPONSE" | jq -e '.success' >/dev/null; then
                 echo "Chunk $CHUNK_NUM uploaded successfully"
                 break
               elif [ $retry -eq 3 ]; then
                 echo "Failed to upload chunk after 3 retries"
-                echo "HTTP Code: $HTTP_CODE"
-                echo "Response: $RESPONSE_BODY"
+                echo "Response: $RESPONSE"
                 exit 1
               else
-                echo "Retry $retry: Failed to upload chunk (HTTP $HTTP_CODE)"
+                echo "Retry $retry: Failed to upload chunk"
                 sleep $((retry * 2))
               fi
             done
@@ -127,22 +93,20 @@ jobs:
           # Complete upload
           echo "Completing upload..."
           for retry in {1..5}; do
-            RESPONSE=$(curl -v -s -X POST "$API_URL/storage/upload/complete" \
+            RESPONSE=$(curl -v -s "$API_URL/api/storage/upload/complete" \
+              -X POST \
               -H "Authorization: Bearer $GITHUB_TOKEN" \
               -H "X-Repository: $GITHUB_REPOSITORY" \
               -H "X-Upload-Id: $UPLOAD_ID" \
+              -H "X-Backup-Owner: ${{ github.repository_owner }}" \
               -H "Content-Type: application/json" \
               -H "Accept: application/json" \
+              -d "{\"uploadId\": \"$UPLOAD_ID\"}" \
               --retry 3 \
-              --retry-delay 2 \
-              --write-out "\nHTTP_CODE:%{http_code}" \
-              -d "{}" 2>&1)
+              --retry-delay 2)
             
-            HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_CODE:" | cut -d':' -f2)
-            RESPONSE_BODY=$(echo "$RESPONSE" | sed -n '/^HTTP_CODE/!p')
-            
-            if [ "$HTTP_CODE" = "200" ] && echo "$RESPONSE_BODY" | jq -e '.cid' >/dev/null; then
-              CID=$(echo "$RESPONSE_BODY" | jq -r '.cid')
+            if echo "$RESPONSE" | jq -e '.cid' >/dev/null; then
+              CID=$(echo "$RESPONSE" | jq -r '.cid')
               if [ -n "$CID" ] && [ "$CID" != "null" ]; then
                 echo "CID: $CID"
                 echo "cid=$CID" >> $GITHUB_OUTPUT
@@ -152,8 +116,7 @@ jobs:
             
             if [ $retry -eq 5 ]; then
               echo "Failed to complete upload after 5 retries"
-              echo "HTTP Code: $HTTP_CODE"
-              echo "Response: $RESPONSE_BODY"
+              echo "Response: $RESPONSE"
               exit 1
             else
               echo "Retry $retry: Waiting before retry..."
